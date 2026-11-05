@@ -1,0 +1,38 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    "AGENTS.md",
+    "STANDARDS.md",
+    "instructions/azure/azure-cloud.instructions.md",
+    "instructions/azure/azure-terraform.instructions.md",
+    "instructions/azure/azure-naming.instructions.md",
+    "instructions/azure/azure-iac-generation.instructions.md",
+    "instructions/azure/azure-devops-pipelines.instructions.md",
+    "instructions/aws/aws-cloud.instructions.md",
+    "instructions/aws/aws-landing-zone.instructions.md",
+    "instructions/terraform/terraform-general.instructions.md",
+    "instructions/terraform/terraform-review.instructions.md",
+    "instructions/devsecops/devsecops-general.instructions.md",
+    "instructions/security/owasp-security.instructions.md",
+    "instructions/security/threat-modeling.instructions.md",
+    "instructions/security/secrets-handling.instructions.md",
+    "instructions/python/python-automation.instructions.md",
+    "instructions/python/python-review.instructions.md",
+    "instructions/typescript/typescript-general.instructions.md",
+    "instructions/documentation/technical-writing.instructions.md",
+    "instructions/kubernetes/kubernetes-best-practices.instructions.md",
+    "instructions/docker/docker-best-practices.instructions.md",
+    "instructions/cicd/gitlab-ci.instructions.md",
+    "instructions/cicd/github-actions.instructions.md",
+    "instructions/migrations/migration-pipelines.instructions.md",
+    "instructions/ai-agents/agent-safety.instructions.md",
+    "instructions/ai-agents/context-engineering.instructions.md",
+    "instructions/ai-agents/never-weaken.instructions.md",
+    "instructions/ai-agents/report-header.instructions.md"
+  ],
+  "skills": {
+    "paths": [
+      "skills"
+    ]
+  }
+}

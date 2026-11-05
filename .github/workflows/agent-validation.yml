@@ -1,0 +1,40 @@
+name: Agent definitions
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-agents:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Install YAML parser for frontmatter validation
+        run: python3 -m pip install --disable-pip-version-check PyYAML==6.0.2
+      - name: Validate six agent definitions and instruction paths
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/validate-agents.py
+      - name: Check canonical skill permissions and skill files
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sync-agent-skill-permissions.py --check
+
+  lint-skill-scripts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Byte-compile bundled Python
+        run: python3 -m compileall -q skills
+      - name: ShellCheck bundled shell
+        run: find skills -name '*.sh' -print0 | xargs -0 shellcheck --severity=error --shell=bash

@@ -1,0 +1,19 @@
+# Local secrets (never commit)
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Knowledge-graph analyzer scratch
+.ua/intermediate/
+.ua/tmp/
+.ua/dashboard.*.log
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
