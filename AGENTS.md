@@ -111,5 +111,6 @@ All substantive reviews should return:
 ## Agent And Skill Model
 
 - Skills under `skills/` are the single source of truth and are **shared** across agents — one skill may be mounted by several agents.
-- Agents under `agents/` are six domain personas (`devsecops-agent`, `python-agent`, `typescript-agent`, `migration-agent`, `ai-llmops-agent`, `observability-sre-agent`), each mounting a deny-by-default, task-selected allow-list of skills via `permission.skill`.
+- Agents under `agents/` are six specialist personas (`devsecops-agent`, `python-agent`, `typescript-agent`, `migration-agent`, `ai-llmops-agent`, `observability-sre-agent`), each mounting a deny-by-default, task-selected allow-list of skills via `permission.skill`.
+- `master-devsecops-agent` is the deliberate exception: every skill is granted through `"*": allow`, `bash`, `read`, `edit` and `external_directory` are unrestricted, and only `git commit`, `git push` and `sudo` prompt. Use it for cross-domain work; prompts are removed, so task authorization still applies.
 - To see which agent owns which skill, read `agents/skill-agent-index.md`. Do not copy a skill into `agents/`; mount it by name.

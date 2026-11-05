@@ -21,8 +21,9 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 AGENTS = frozenset({
     "devsecops-agent", "python-agent", "typescript-agent", "migration-agent",
-    "ai-llmops-agent", "observability-sre-agent",
+    "ai-llmops-agent", "observability-sre-agent", "master-devsecops-agent",
 })
+UNIVERSAL = frozenset({"master-devsecops-agent"})
 NAME = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
 ROW = re.compile(r"\| `([^`]+)` \| `([^`]+)` \| ([^|]+) \|\Z")
 KEY = re.compile(r"([A-Za-z_][\w-]*):(?:\s*(.*))?\Z")
@@ -156,7 +157,8 @@ def agent_block(agent: str) -> tuple[str, list[str], int, int, dict[str, str]]:
         key = next(group for group in m.groups()[:3] if group is not None)
         require(key not in entries, f"{agent}: duplicate skill entry: {key}")
         entries[key] = m.group(4)
-    require(entries.get("*") == "deny", f"{agent}: wildcard must be deny")
+    require(entries.get("*") == ("allow" if agent in UNIVERSAL else "deny"),
+            f"{agent}: wildcard must be {'allow' if agent in UNIVERSAL else 'deny'}")
     require(all(k == "*" or NAME.fullmatch(k) for k in entries),
             f"{agent}: invalid skill key")
     return source, fm, start, end, entries
@@ -176,13 +178,22 @@ def main() -> int:
             expected = mapping[agent]
             actual = {key for key, value in entries.items() if key != "*" and value == "allow"}
             stale = set(entries) - actual - {"*"}
-            if expected != actual or stale:
-                print(f"{agent}: missing={sorted(expected - actual)} extra={sorted(actual - expected)} "
-                      f"non-allow={sorted(stale)}")
+            if agent in UNIVERSAL:
+                mismatch = bool(actual) or bool(stale)
+                detail = f"universal grant; {len(actual)} explicit entry(ies), {len(stale)} non-allow"
+            else:
+                mismatch = expected != actual
+                detail = (f"missing={sorted(expected - actual)} extra={sorted(actual - expected)} "
+                          f"non-allow={sorted(stale)}")
+            if mismatch:
+                print(f"{agent}: {detail}")
                 newline = "\r\n" if "\r\n" in fm[0] else "\n"
-                replacement = [f'    "*": deny{newline}'] + [
-                    f'    "{name}": allow{newline}' for name in sorted(expected)
-                ]
+                if agent in UNIVERSAL:
+                    replacement = [f'    "*": allow{newline}']
+                else:
+                    replacement = [f'    "*": deny{newline}'] + [
+                        f'    "{name}": allow{newline}' for name in sorted(expected)
+                    ]
                 new_source = "".join(fm[:start] + replacement + fm[end:]) + source[len("".join(fm)):]
                 pending.append((ROOT / "agents" / f"{agent}.md", new_source))
         if pending and not args.write:

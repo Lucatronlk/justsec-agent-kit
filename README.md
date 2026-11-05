@@ -2,7 +2,7 @@
 
 Just enough agent kit to do DevSecOps properly: security-first skills, personas, and deny-by-default guardrails for AI coding agents.
 
-274 skills, six domain personas, and the permission model that decides which persona may load which skill. Built for OpenCode, portable to any host that reads `SKILL.md`.
+274 skills, six specialist personas, one unrestricted master, and the permission model that decides which persona may load which skill. Built for OpenCode, portable to any host that reads `SKILL.md`.
 
 ## What this is
 
@@ -47,7 +47,7 @@ npx skills add Lucatronlk/justsec-agent-kit --list
 npx skills add Lucatronlk/justsec-agent-kit --skill terraform-review
 ```
 
-Global install on OpenCode (links every skill, installs the six personas):
+Global install on OpenCode (links every skill, installs the seven personas):
 
 ```bash
 # macOS / Linux
@@ -58,10 +58,11 @@ powershell -File scripts/sync-global-opencode.ps1
 
 Restart the host afterwards. The scripts never overwrite an existing non-link path and never delete a skill target.
 
-## The six agents
+## The seven agents
 
 | Agent | Domain | Skills |
 |---|---|---|
+| `master-devsecops-agent` | Everything, every skill, unrestricted. Only `git commit`, `git push` and `sudo` prompt | 274 |
 | `devsecops-agent` | Cloud, infrastructure, security, Kubernetes, CI/CD, Terraform | 230 |
 | `python-agent` | Python development, quality, security, performance | 32 |
 | `typescript-agent` | TypeScript, Node.js, Electron, VS Code extensions | 60 |
@@ -71,6 +72,18 @@ Restart the host afterwards. The scripts never overwrite an existing non-link pa
 
 A grant means *available on demand*, never auto-loaded. See [`agents/skill-agent-index.md`](agents/skill-agent-index.md) for the full matrix and [`agents/USAGE.md`](agents/USAGE.md) for routing.
 
+`master-devsecops-agent` is the exception to the restrictive model: all 274 skills, no `ask` on shell or external paths, and no credential-path denial. Three commands still stop for approval — `git commit`, `git push`, `sudo`. Use it when a task crosses domains, and remember that removed prompts are not authorization.
+
+### Unattended runs
+
+Those three asks are the only place an unattended session can stall. Pick one of these before relying on it headless:
+
+1. **Warm up once, interactively.** Answer `always` on the first `git commit` and `git push`. OpenCode saves them as durable project-scoped `allow` rules that survive restarts. Review and prune saved rules later.
+2. **Ship a zero-prompt variant.** Copy `agents/master-devsecops-agent.md` and change the three `ask` values to `allow`. Keep the commit and push steps in your prompt sequence so history and remote state are still deliberate.
+3. **Make `sudo` non-interactive.** A prompt cannot be answered in a headless run. Grant `NOPASSWD` for the specific commands in `sudoers`, and prefer `sudo -n` so a missing grant fails fast instead of hanging.
+
+Unattended also needs push credentials already in place (SSH agent or a scoped token) and a clean working tree policy, or `git commit` will silently include unrelated changes. With no prompts in the way, keep the dry-run defaults that the skills already specify.
+
 ## Layout
 
 ```
@@ -78,7 +91,7 @@ AGENTS.md          operating policy
 STANDARDS.md       naming, tagging, security baseline
 instructions/      domain standards, loaded as context
 skills/            the capability library, one SKILL.md per folder
-agents/            six personas plus the canonical skill index
+agents/            seven personas plus the canonical skill index
 scripts/           validation gates, install sync, read-only review helpers
 templates/         repo and command scaffolding
 plugins/ mcp/      access-profile review notes, nothing auto-installed
@@ -95,7 +108,7 @@ Both must pass. `--write` regenerates the allow-lists from the index; do not han
 
 ## Compatibility
 
-Skills use plain `SKILL.md` frontmatter. `opencode.json` is the only host-specific file. The six agent files are also usable as reference personas in Copilot custom chat modes or Claude Code subagents.
+Skills use plain `SKILL.md` frontmatter. `opencode.json` is the only host-specific file. The seven agent files are also usable as reference personas in Copilot custom chat modes or Claude Code subagents.
 
 ## Licence
 
