@@ -19,11 +19,11 @@ Each frontmatter declares identity, routing description, `mode: all`, tool permi
 
 ## Validate definitions
 
-Run `PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate-agents.py` and `python3 scripts/sync-agent-skill-permissions.py --check` from repository root. The first gate parses frontmatter with PyYAML, checks six agent names, 20 shared grants, required operating modes, instruction paths and restrictive permissions; it does not prove runtime enforcement or semantic completeness. PyYAML must already be installed; do not auto-install it. Do not present prose `read` restrictions as shell sandboxing. `.github/workflows/agent-validation.yml` runs both gates on PRs and pushes to `main`; hosted CI execution remains unverified.
+Run `PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate-agents.py` and `python3 scripts/sync-agent-skill-permissions.py --check` from repository root. The first gate parses frontmatter with PyYAML, checks six agent names, 20 shared grants, required operating modes, instruction paths and restrictive permissions; it does not prove runtime enforcement or semantic completeness. PyYAML must already be installed; do not auto-install it. Do not present prose `read` restrictions as shell sandboxing. `.github/workflows/agent-validation.yml` runs both gates, plus ShellCheck and a byte-compile pass, on GitHub-hosted runners (`ubuntu-24.04`) for pull requests and pushes to `main`. The workflow token is `contents: read` and checkout uses `persist-credentials: false`.
 
-### Runtime resolution status (v2.0.24, observed via `opencode debug agents`)
+### Runtime resolution status
 
-`opencode debug agents` confirms all six domain agents load. On this Linux installation (Oct 22 2026), each resolves `edit: allow` with protected-path denials, `shell: ask`, and `external_directory: ask` with `$HOME` skill-root exceptions expanded to the current home directory. This is configuration resolution only; execution-level path prompts and behavior on Windows/macOS remain **not verified**. A prior child-agent execution check showed a denied skill returning `permission.rejected` and an allowed skill loading; it did not test these path exceptions. The global config's four formerly missing instruction paths were added Oct 18 2026; avoid printing global config because it contains secrets.
+`opencode debug agents` confirmed all six domain agents load. On a Linux installation (Oct 22 2026) each resolved `edit: allow` with protected-path denials, `shell: ask`, and `external_directory: ask` with `$HOME` skill-root exceptions expanded to the current home directory. This is configuration resolution only; execution-level path prompts and behaviour on Windows/macOS remain **not verified**. A prior child-agent execution check showed a denied skill returning `permission.rejected` and an allowed skill loading; it did not test these path exceptions. Avoid printing the global config, because it contains secrets.
 
 ## Keep permissions in sync
 
