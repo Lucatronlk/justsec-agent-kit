@@ -1,46 +1,35 @@
-# justsec-agent-kit
+<h1 align="center"><img src="assets/justsec/JustSec%20agent%20kit%20gradient%20wordmark.png" alt="justsec-agent-kit" width="100%"></h1>
 
-Just enough agent kit to do DevSecOps properly: security-first skills, personas, and deny-by-default guardrails for AI coding agents.
+<p align="center"><strong>No shortcuts — Just security.</strong></p>
 
 274 skills, six specialist personas, one unrestricted master, and the permission model that decides which persona may load which skill. Built for OpenCode, portable to any host that reads `SKILL.md`.
 
-## What this is
+Security-first skills, agent personas and reviewable permission controls for AI coding agents. Built for OpenCode; skill files use portable `SKILL.md` format.
 
-- A curated capability library for cloud, infrastructure, security, Python, TypeScript, migration, LLMOps, and SRE work.
-- A deny-by-default permission model: every agent starts at `"*": deny` and gets named grants only.
-- Two validation gates that keep the index, the skill files, and the agent allow-lists in sync.
-- Read-only by default. Audits stay read-only; implementation needs explicit task scope.
+<p align="center"><img src="assets/brand/section-divider.svg" width="100%" height="6" alt=""></p>
 
-## What this is not
+## <img src="assets/icons/star.svg" width="22" height="22" alt=""> What you get
 
-- **Not a sandbox.** `bash: ask` prompts before a command, then runs it with your account's rights.
-- **Not a runtime.** It does not install tools, call clouds, or manage credentials.
-- **Not a guarantee.** Example commands are templates. Validate before running them against anything real.
+<table>
+  <tr>
+    <td align="center" valign="top" width="33%"><img src="assets/icons/toolbox.svg" width="28" height="28" alt=""><br><strong>Skills on demand</strong><br><sub>274 skills across cloud, infrastructure, security, Python, TypeScript, migrations, LLMOps and SRE.</sub></td>
+    <td align="center" valign="top" width="33%"><img src="assets/icons/robot.svg" width="28" height="28" alt=""><br><strong>Domain personas</strong><br><sub>Six agents with named skill grants and clear review versus implementation boundaries.</sub></td>
+    <td align="center" valign="top" width="33%"><img src="assets/icons/shield.svg" width="28" height="28" alt=""><br><strong>Reviewable controls</strong><br><sub>Default-deny skill permissions; validation scripts check agent definitions and skill mappings.</sub></td>
+  </tr>
+</table>
 
-## Security model
+<p align="center"><img src="assets/brand/section-divider.svg" width="100%" height="6" alt=""></p>
 
-| Control | Behaviour |
-|---|---|
-| Skill grants | `permission.skill` denies by default; grants come from one canonical index |
-| Shell | `bash: ask` on every agent |
-| Credential files | `*.env`, `*.env.*`, `*.pem`, `*.key`, `*credentials*`, `*kubeconfig*`, `*/.ssh/*`, `.netrc`, `*.p12`, `*.pfx`, `*.tfstate` denied for `read` and `edit` |
-| External paths | `ask`, except the two skill roots |
-| Content trust | Skill text is data, not instructions; higher policy wins |
-| CI | Both gates run on every pull request; token is `contents: read` |
-
-These are approval and config controls. A shell command can still read a file the `read` rule denies. See [`SECURITY.md`](SECURITY.md) for the full model and reporting.
-
-## Quick start
-
-OpenCode, per project:
+## <img src="assets/icons/sparkle.svg" width="22" height="22" alt=""> Quick start
 
 ```bash
 git clone https://github.com/Lucatronlk/justsec-agent-kit
+cd justsec-agent-kit
+PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate-agents.py
+python3 scripts/sync-agent-skill-permissions.py --check
 ```
 
-Point your project config at the checkout, or copy the relevant `instructions/` paths into the project `opencode.json`. Agents live in `agents/*-agent.md`.
-
-Any agent-skills-compatible host:
+For an agent-skills-compatible host, list skills before selecting one:
 
 ```bash
 npx skills add Lucatronlk/justsec-agent-kit --list
@@ -49,14 +38,9 @@ npx skills add Lucatronlk/justsec-agent-kit --skill terraform-review
 
 Global install on OpenCode (links every skill, installs the seven personas):
 
-```bash
-# macOS / Linux
-bash scripts/sync-global-opencode.sh
-# Windows
-powershell -File scripts/sync-global-opencode.ps1
-```
+<p align="center"><img src="assets/brand/section-divider.svg" width="100%" height="6" alt=""></p>
 
-Restart the host afterwards. The scripts never overwrite an existing non-link path and never delete a skill target.
+## <img src="assets/icons/shield.svg" width="22" height="22" alt=""> Security model
 
 ## The seven agents
 
@@ -70,7 +54,7 @@ Restart the host afterwards. The scripts never overwrite an existing non-link pa
 | `ai-llmops-agent` | Agents, LLMOps, local inference, RAG | 55 |
 | `observability-sre-agent` | Telemetry, SLOs, alerts, incidents, DR | 46 |
 
-A grant means *available on demand*, never auto-loaded. See [`agents/skill-agent-index.md`](agents/skill-agent-index.md) for the full matrix and [`agents/USAGE.md`](agents/USAGE.md) for routing.
+<p align="center"><img src="assets/brand/section-divider.svg" width="100%" height="6" alt=""></p>
 
 `master-devsecops-agent` is the exception to the restrictive model: all 274 skills, no `ask` on shell or external paths, and no credential-path denial. Three commands still stop for approval — `git commit`, `git push`, `sudo`. Use it when a task crosses domains, and remember that removed prompts are not authorization.
 
@@ -97,19 +81,36 @@ templates/         repo and command scaffolding
 plugins/ mcp/      access-profile review notes, nothing auto-installed
 ```
 
-## Validate
+Grants make skills available on demand; they do not auto-load them. See [agents/USAGE.md](agents/USAGE.md) for routing and [agents/skill-agent-index.md](agents/skill-agent-index.md) for complete mapping.
+
+<p align="center"><img src="assets/brand/section-divider.svg" width="100%" height="6" alt=""></p>
+
+## <img src="assets/icons/layers.svg" width="22" height="22" alt=""> Repository map
+
+| Path | Purpose |
+|---|---|
+| `AGENTS.md`, `STANDARDS.md` | Operating policy and security baseline |
+| `instructions/` | Domain standards |
+| `skills/` | Capability library; one `SKILL.md` per skill |
+| `agents/` | Domain personas and canonical skill index |
+| `scripts/` | Validation, setup and review helpers |
+| `templates/`, `plugins/`, `mcp/` | Scaffolding and integration notes; nothing auto-installed |
+
+<p align="center"><img src="assets/brand/section-divider.svg" width="100%" height="6" alt=""></p>
+
+## <img src="assets/icons/terminal.svg" width="22" height="22" alt=""> Validate
 
 ```bash
 PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate-agents.py
 python3 scripts/sync-agent-skill-permissions.py --check
 ```
 
-Both must pass. `--write` regenerates the allow-lists from the index; do not hand-edit them. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+Both checks must pass; `--write` regenerates agent allow-lists from index, so do not hand-edit them. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Compatibility
+<p align="center"><img src="assets/brand/section-divider.svg" width="100%" height="6" alt=""></p>
 
 Skills use plain `SKILL.md` frontmatter. `opencode.json` is the only host-specific file. The seven agent files are also usable as reference personas in Copilot custom chat modes or Claude Code subagents.
 
-## Licence
+Original material is MIT-licensed under [LICENSE](LICENSE). Bundled third-party material retains its own terms; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Brand artwork has separate [reuse notice](assets/NOTICE.md).
 
-Original material is MIT — see [`LICENSE`](LICENSE). Bundled third-party material keeps its own terms; see [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+`opencode.json` contains host-specific configuration. Skills use portable `SKILL.md` files; persona definitions can also serve as reference for other agent hosts.
