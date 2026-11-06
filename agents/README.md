@@ -1,9 +1,10 @@
 # Agents
 
-Six domain agents, each with a deny-by-default `permission.skill` list. Permission means available on demand, not auto-loaded; task-relevant skills must be loaded via the skill tool. Skills live once under `../skills/`. See [`USAGE.md`](USAGE.md) for a routing guide (which agent for which task, and why).
+Six domain agents, each with a deny-by-default `permission.skill` list, plus one unrestricted master generalist. Permission means available on demand, not auto-loaded; task-relevant skills must be loaded via the skill tool. Skills live once under `../skills/`. See [`USAGE.md`](USAGE.md) for a routing guide (which agent for which task, and why).
 
 | Agent | Responsibility | Permitted skills |
 |---|---|---|
+| [`master-devsecops-agent`](master-devsecops-agent.md) | Any domain, every skill. Unrestricted except `git commit`, `git push` and `sudo` | 274 |
 | [`devsecops-agent`](devsecops-agent.md) | Cloud, infrastructure, security, platform engineering, Kubernetes, CI/CD and Terraform | 230 |
 | [`python-agent`](python-agent.md) | Python development, packaging, debugging, quality, performance and concurrency | 32 |
 | [`typescript-agent`](typescript-agent.md) | TypeScript, Node.js, Electron, VS Code-compatible extensions | 60 |
@@ -11,19 +12,21 @@ Six domain agents, each with a deny-by-default `permission.skill` list. Permissi
 | [`ai-llmops-agent`](ai-llmops-agent.md) | AI agents, LLMOps, local AI and RAG | 55 |
 | [`observability-sre-agent`](observability-sre-agent.md) | Monitoring, logging, telemetry, SRE and incidents | 46 |
 
-**274 indexed skills**, **274 skill files**, **104 shared skills**. The 16 existing analysis/Understand skills and four new analysis skills are permitted to all six agents; use only for matching work. See [`skill-agent-index.md`](skill-agent-index.md) for every skill and owner.
+**274 indexed skills**, **274 skill files**, **274 shared skills**. All skills are permitted to `master-devsecops-agent`; the 20 shared analysis skills are permitted to all agents; use only matching work. See [`skill-agent-index.md`](skill-agent-index.md) for every skill and owner.
 
 ## Standard persona contract
 
-Each frontmatter declares identity, routing description, `mode: all`, tool permissions and deny-by-default skill permissions. **Model is deliberately inherited** from host/global configuration; no `model:` override is set. Bodies cover role/invocation, specialist handoff, discovery → planning → execution → verification, safety and evidence-based output. Audit requests remain read-only; implementation requires explicit task authorization even for auto-approved project edits. `edit` defaults to `allow` with protected credential-path denials; external directories default to `ask` except `$HOME` source/installed skill roots. `bash: ask` remains. Once an external path is approved, an edit there may run without a second edit prompt, except protected credential paths. Auto-approved skill roots can also be edited without a prompt: this is a configuration limitation, not task authorization to modify skills. Credential-file patterns are denied in both `read` and `edit`, with full `[REDACTED]` reporting; a shell command must never bypass denied reads.
+Each frontmatter declares identity, routing description, `mode: all`, tool permissions and skill permissions. **Model is deliberately inherited** from host/global configuration; no `model:` override is set. Bodies cover role/invocation, specialist handoff, discovery → planning → execution → verification, safety and evidence-based output. Audit requests remain read-only; implementation requires explicit task authorization even for auto-approved project edits.
+
+The six specialists deny by default: `edit` is allowed with protected credential-path denials, external directories `ask` except `$HOME` source/installed skill roots, `bash: ask`, and `permission.skill` `"*": deny`. `master-devsecops-agent` inverts this — `"*": allow` on skills, scalar `allow` on `read`, `edit` and `external_directory`, and a `bash` map that allows everything except `git commit *`, `git push *` and `sudo *`. Credential files are readable there but still reported as `[REDACTED]`. A shell command bypasses glob denials in either model, so neither is a sandbox.
 
 ## Validate definitions
 
-Run `PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate-agents.py` and `python3 scripts/sync-agent-skill-permissions.py --check` from repository root. The first gate parses frontmatter with PyYAML, checks six agent names, 20 shared grants, required operating modes, instruction paths and restrictive permissions; it does not prove runtime enforcement or semantic completeness. PyYAML must already be installed; do not auto-install it. Do not present prose `read` restrictions as shell sandboxing. `.github/workflows/agent-validation.yml` runs both gates, plus ShellCheck and a byte-compile pass, on GitHub-hosted runners (`ubuntu-24.04`) for pull requests and pushes to `main`. The workflow token is `contents: read` and checkout uses `persist-credentials: false`.
+Run `PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate-agents.py` and `python3 scripts/sync-agent-skill-permissions.py --check` from repository root. The first gate parses frontmatter with PyYAML, checks seven agent names, 20 shared grants, required operating modes, instruction paths and restrictive permissions; it does not prove runtime enforcement or semantic completeness. PyYAML must already be installed; do not auto-install it. Do not present prose `read` restrictions as shell sandboxing. `.github/workflows/agent-validation.yml` runs both gates, plus ShellCheck and a byte-compile pass, on GitHub-hosted runners (`ubuntu-24.04`) for pull requests and pushes to `main`. The workflow token is `contents: read` and checkout uses `persist-credentials: false`.
 
 ### Runtime resolution status
 
-`opencode debug agents` confirmed all six domain agents load. On a Linux installation (Oct 22 2026) each resolved `edit: allow` with protected-path denials, `shell: ask`, and `external_directory: ask` with `$HOME` skill-root exceptions expanded to the current home directory. This is configuration resolution only; execution-level path prompts and behaviour on Windows/macOS remain **not verified**. A prior child-agent execution check showed a denied skill returning `permission.rejected` and an allowed skill loading; it did not test these path exceptions. Avoid printing the global config, because it contains secrets.
+`opencode debug agents` confirmed the six specialist agents load. On a Linux installation (Oct 22 2026) each resolved `edit: allow` with protected-path denials, `shell: ask`, and `external_directory: ask` with `$HOME` skill-root exceptions expanded to the current home directory. This is configuration resolution only; execution-level path prompts and behaviour on Windows/macOS remain **not verified**. A prior child-agent execution check showed a denied skill returning `permission.rejected` and an allowed skill loading; it did not test these path exceptions. Avoid printing the global config, because it contains secrets.
 
 ## Keep permissions in sync
 
